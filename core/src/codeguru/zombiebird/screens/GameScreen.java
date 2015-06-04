@@ -2,6 +2,7 @@ package codeguru.zombiebird.screens;
 
 import codeguru.zombiebird.gameworld.GameRenderer;
 import codeguru.zombiebird.gameworld.GameWorld;
+import codeguru.zombiebird.helpers.InputHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -20,6 +21,7 @@ public class GameScreen implements Screen {
 
         world = new GameWorld(midPointY);
         renderer = new GameRenderer(world);
+        Gdx.input.setInputProcessor(new InputHandler(world.getBird()));
     }
 
     @Override

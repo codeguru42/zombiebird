@@ -2,14 +2,18 @@ package codeguru.zombiebird.gameworld;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class GameRenderer {
     private final OrthographicCamera cam;
     private final GameWorld myWorld;
+    private final ShapeRenderer shapeRenderer;
 
     public GameRenderer(GameWorld world) {
         cam = new OrthographicCamera();
         cam.setToOrtho(true, 136, 204);
+        shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(cam.combined);
 
         myWorld = world;
     }

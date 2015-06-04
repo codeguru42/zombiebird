@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 public class GameScreen implements Screen {
     private GameWorld world;
     private GameRenderer renderer;
+    private float runTime = 0;
 
     public GameScreen() {
         Gdx.app.log("GameScreen", "attached");
@@ -20,7 +21,7 @@ public class GameScreen implements Screen {
         int midPointY = (int) (gameHeight / 2);
 
         world = new GameWorld(midPointY);
-        renderer = new GameRenderer(world);
+        renderer = new GameRenderer(world, (int) gameHeight, midPointY);
         Gdx.input.setInputProcessor(new InputHandler(world.getBird()));
     }
 
@@ -31,8 +32,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        world.update(delta); // GameWorld updates
-        renderer.render();
+        runTime += delta;
+        world.update(delta);
+        renderer.render(runTime);
     }
 
     @Override

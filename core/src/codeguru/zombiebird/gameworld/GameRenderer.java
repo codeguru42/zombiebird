@@ -6,6 +6,7 @@ import codeguru.zombiebird.gameobjects.Pipe;
 import codeguru.zombiebird.gameobjects.ScrollHandler;
 import codeguru.zombiebird.helpers.AssetLoader;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -83,7 +84,14 @@ public class GameRenderer {
 
         // End SpriteBatch
         batcher.end();
+
+        // Draw bird's bounding circle
+        shapeRenderer.begin(ShapeType.Filled);
+        shapeRenderer.setColor(Color.RED);
+        shapeRenderer.circle(bird.getBoundingCircle().x, bird.getBoundingCircle().y, bird.getBoundingCircle().radius);
+        shapeRenderer.end();
     }
+
     private void drawGrass() {
         // Draw the grass
         batcher.draw(AssetLoader.grass, frontGrass.getX(), frontGrass.getY(),

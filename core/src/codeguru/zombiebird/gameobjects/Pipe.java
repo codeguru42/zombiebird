@@ -8,6 +8,7 @@ public class Pipe extends Scrollable {
     private Random r;
     private Rectangle skullUp, skullDown, barUp, barDown;
     private float groundY;
+    private boolean isScored = false;
     public static final int VERTICAL_GAP = 45;
     public static final int SKULL_WIDTH = 24;
     public static final int SKULL_HEIGHT = 11;
@@ -39,6 +40,7 @@ public class Pipe extends Scrollable {
     public void reset(float newX) {
         super.reset(newX);
         height = r.nextInt(90) + 15;
+        isScored = false;
     }
 
     public Rectangle getSkullUp() {
@@ -63,5 +65,13 @@ public class Pipe extends Scrollable {
                 || Intersector.overlaps(bird.getBoundingCircle(), barDown)
                 || Intersector.overlaps(bird.getBoundingCircle(), skullUp)
                 || Intersector.overlaps(bird.getBoundingCircle(), skullDown));
+    }
+
+    public boolean isScored() {
+        return isScored;
+    }
+
+    public void setScored(boolean b) {
+        isScored = b;
     }
 }

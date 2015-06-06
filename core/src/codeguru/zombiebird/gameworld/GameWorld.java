@@ -15,7 +15,7 @@ public class GameWorld {
     private int midPointY;
 
     public enum GameState {
-        READY, RUNNING, GAMEOVER
+        READY, RUNNING, GAMEOVER, HIGHSCORE
     }
 
     public GameWorld(int midPointY) {
@@ -33,8 +33,10 @@ public class GameWorld {
                 break;
 
             case RUNNING:
-            default:
                 updateRunning(delta);
+                break;
+
+            default:
                 break;
         }
     }
@@ -65,6 +67,11 @@ public class GameWorld {
             bird.die();
             bird.decelerate();
             currentState = GameState.GAMEOVER;
+
+            if (score > AssetLoader.getHighScore()) {
+                AssetLoader.setHighScore(score);
+                currentState = GameState.HIGHSCORE;
+            }
         }
     }
 
@@ -86,6 +93,10 @@ public class GameWorld {
 
     public boolean isGameOver() {
         return currentState == GameState.GAMEOVER;
+    }
+
+    public boolean isHighScore() {
+        return currentState == GameState.HIGHSCORE;
     }
 
     public Bird getBird() {

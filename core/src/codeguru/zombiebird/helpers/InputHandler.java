@@ -21,7 +21,7 @@ public class InputHandler extends InputAdapter {
 
         myBird.onClick();
 
-        if (myWorld.isGameOver()) {
+        if (myWorld.isGameOver() || myWorld.isHighScore()) {
             myWorld.restart();
         }
 

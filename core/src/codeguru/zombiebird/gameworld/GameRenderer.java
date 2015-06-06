@@ -81,6 +81,12 @@ public class GameRenderer {
                     1, 1, bird.getRotation());
         }
 
+        String score = myWorld.getScore() + "";
+        AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(),
+                (136 / 2) - (3 * score.length()), 12);
+        AssetLoader.font.draw(batcher, "" + myWorld.getScore(),
+                (136 / 2) - (3 * score.length() - 1), 11);
+
         // End SpriteBatch
         batcher.end();
     }

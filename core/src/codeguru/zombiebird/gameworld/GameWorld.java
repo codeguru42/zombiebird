@@ -11,14 +11,39 @@ public class GameWorld {
     private ScrollHandler scroller;
     private Rectangle ground;
     private int score = 0;
+    private GameState currentState;
+    private int midPointY;
+
+    public enum GameState {
+        READY, RUNNING, GAMEOVER
+    }
 
     public GameWorld(int midPointY) {
         bird = new Bird(33, midPointY - 5, 17, 12);
         scroller = new ScrollHandler(this, midPointY + 66);
         ground = new Rectangle(0, midPointY + 66, 136, 11);
+        currentState = GameState.READY;
+        this.midPointY = midPointY;
     }
 
     public void update(float delta) {
+        switch (currentState) {
+            case READY:
+                updateReady(delta);
+                break;
+
+            case RUNNING:
+            default:
+                updateRunning(delta);
+                break;
+        }
+    }
+
+    private void updateReady(float delta) {
+        // Do nothing for now
+    }
+
+    public void updateRunning(float delta) {
         // Add a delta cap so that if our game takes too long
         // to update, we will not break our collision detection.
 
@@ -39,7 +64,28 @@ public class GameWorld {
             scroller.stop();
             bird.die();
             bird.decelerate();
+            currentState = GameState.GAMEOVER;
         }
+    }
+
+    public boolean isReady() {
+        return currentState == GameState.READY;
+    }
+
+    public void start() {
+        currentState = GameState.RUNNING;
+    }
+
+    public void restart() {
+        currentState = GameState.READY;
+        score = 0;
+        bird.onRestart(midPointY - 5);
+        scroller.onRestart();
+        currentState = GameState.READY;
+    }
+
+    public boolean isGameOver() {
+        return currentState == GameState.GAMEOVER;
     }
 
     public Bird getBird() {

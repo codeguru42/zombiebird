@@ -112,4 +112,14 @@ public class Bird {
     public boolean isAlive() {
         return isAlive;
     }
+
+    public void onRestart(int y) {
+        rotation = 0;
+        position.y = y;
+        velocity.x = 0;
+        velocity.y = 0;
+        acceleration.x = 0;
+        acceleration.y = 460;
+        isAlive = true;
+    }
 }

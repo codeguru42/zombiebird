@@ -13,6 +13,7 @@ import codeguru.zombiebird.tween.Value;
 import codeguru.zombiebird.tween.ValueAccessor;
 import codeguru.zombiebird.ui.SimpleButton;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,6 +32,7 @@ public class GameRenderer {
     private TweenManager manager;
     private Value alpha = new Value();
     private List<SimpleButton> menuButtons;
+    private Color transitionColor = new Color();
 
     public GameRenderer(GameWorld world, int midPointY) {
         myWorld = world;
@@ -46,13 +48,7 @@ public class GameRenderer {
         batcher = new SpriteBatch();
         batcher.setProjectionMatrix(cam.combined);
         initGameObjects();
-        setupTweens();
-    }
-
-    private void setupTweens() {
-        Tween.registerAccessor(Value.class, new ValueAccessor());
-        manager = new TweenManager();
-        Tween.to(alpha, -1, .5f).target(0).ease(TweenEquations.easeOutQuad).start(manager);
+        prepareTransition(255, 255, 255, .5f);
     }
 
     private void initGameObjects() {
@@ -89,17 +85,23 @@ public class GameRenderer {
             drawScore();
         } else if (myWorld.isReady()) {
             drawBird(runTime);
-            drawScore();
+            drawReady();
         } else if (myWorld.isMenu()) {
             drawBirdCentered(runTime);
             drawMenuUI();
         } else if (myWorld.isGameOver()) {
+            drawScoreboard();
             drawBird(runTime);
-            drawScore();
+            drawGameOver();
+            drawRetry();
         } else if (myWorld.isHighScore()) {
+            drawScoreboard();
             drawBird(runTime);
-            drawScore();
+            drawHighScore();
+            drawRetry();
         }
+
+        drawGrass();
         batcher.end();
         drawTransition(delta);
     }
@@ -179,6 +181,57 @@ public class GameRenderer {
 
     }
 
+    private void drawScoreboard() {
+        batcher.draw(AssetLoader.scoreboard, 22, midPointY - 30, 97, 37);
+
+        batcher.draw(AssetLoader.noStar, 25, midPointY - 15, 10, 10);
+        batcher.draw(AssetLoader.noStar, 37, midPointY - 15, 10, 10);
+        batcher.draw(AssetLoader.noStar, 49, midPointY - 15, 10, 10);
+        batcher.draw(AssetLoader.noStar, 61, midPointY - 15, 10, 10);
+        batcher.draw(AssetLoader.noStar, 73, midPointY - 15, 10, 10);
+
+        if (myWorld.getScore() > 2) {
+            batcher.draw(AssetLoader.star, 73, midPointY - 15, 10, 10);
+        }
+
+        if (myWorld.getScore() > 17) {
+            batcher.draw(AssetLoader.star, 61, midPointY - 15, 10, 10);
+        }
+
+        if (myWorld.getScore() > 50) {
+            batcher.draw(AssetLoader.star, 49, midPointY - 15, 10, 10);
+        }
+
+        if (myWorld.getScore() > 80) {
+            batcher.draw(AssetLoader.star, 37, midPointY - 15, 10, 10);
+        }
+
+        if (myWorld.getScore() > 120) {
+            batcher.draw(AssetLoader.star, 25, midPointY - 15, 10, 10);
+        }
+
+        int length = ("" + myWorld.getScore()).length();
+
+        AssetLoader.whiteFont.draw(batcher, "" + myWorld.getScore(),
+                104 - (2 * length), midPointY - 20);
+
+        int length2 = ("" + AssetLoader.getHighScore()).length();
+        AssetLoader.whiteFont.draw(batcher, "" + AssetLoader.getHighScore(),
+                104 - (2.5f * length2), midPointY - 3);
+    }
+
+    private void drawRetry() {
+        batcher.draw(AssetLoader.retry, 36, midPointY + 10, 66, 14);
+    }
+
+    private void drawReady() {
+        batcher.draw(AssetLoader.ready, 36, midPointY - 50, 68, 14);
+    }
+
+    private void drawGameOver() {
+        batcher.draw(AssetLoader.gameOver, 24, midPointY - 50, 92, 14);
+    }
+
     private void drawScore() {
         int length = ("" + myWorld.getScore()).length();
         AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(),
@@ -187,17 +240,29 @@ public class GameRenderer {
                 68 - (3 * length), midPointY - 83);
     }
 
+    private void drawHighScore() {
+        batcher.draw(AssetLoader.highScore, 22, midPointY - 50, 96, 14);
+    }
+
+    public void prepareTransition(int r, int g, int b, float duration) {
+        transitionColor.set(r / 255.0f, g / 255.0f, b / 255.0f, 1);
+        alpha.setValue(1);
+        Tween.registerAccessor(Value.class, new ValueAccessor());
+        manager = new TweenManager();
+        Tween.to(alpha, -1, duration).target(0).ease(TweenEquations.easeOutQuad).start(manager);
+    }
+
     private void drawTransition(float delta) {
         if (alpha.getValue() > 0) {
             manager.update(delta);
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
             shapeRenderer.begin(ShapeType.Filled);
-            shapeRenderer.setColor(1, 1, 1, alpha.getValue());
+            shapeRenderer.setColor(transitionColor.r, transitionColor.g,
+                    transitionColor.b, alpha.getValue());
             shapeRenderer.rect(0, 0, 136, 300);
             shapeRenderer.end();
             Gdx.gl.glDisable(GL20.GL_BLEND);
-
         }
     }
 }

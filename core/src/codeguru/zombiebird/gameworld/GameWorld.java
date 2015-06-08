@@ -14,6 +14,7 @@ public class GameWorld {
     private float runTime = 0;
     private GameState currentState;
     private int midPointY;
+    private GameRenderer renderer;
 
     public enum GameState {
         MENU, READY, RUNNING, GAMEOVER, HIGHSCORE
@@ -64,11 +65,18 @@ public class GameWorld {
             scroller.stop();
             bird.die();
             AssetLoader.dead.play();
+            renderer.prepareTransition(255, 255, 255, .3f);
+            AssetLoader.fall.play();
         }
 
         if (Intersector.overlaps(bird.getBoundingCircle(), ground)) {
+            if (bird.isAlive()) {
+                AssetLoader.dead.play();
+                renderer.prepareTransition(255, 255, 255, .3f);
+                bird.die();
+            }
+
             scroller.stop();
-            bird.die();
             bird.decelerate();
             currentState = GameState.GAMEOVER;
 
@@ -89,6 +97,7 @@ public class GameWorld {
 
     public void ready() {
         currentState = GameState.READY;
+        renderer.prepareTransition(0, 0, 0, 1f);
     }
 
     public void restart() {
@@ -96,7 +105,7 @@ public class GameWorld {
         score = 0;
         bird.onRestart(midPointY - 5);
         scroller.onRestart();
-        currentState = GameState.READY;
+        ready();
     }
 
     public boolean isGameOver() {
@@ -134,5 +143,9 @@ public class GameWorld {
 
     public int getMidPointY() {
         return midPointY;
+    }
+
+    public void setRenderer(GameRenderer renderer) {
+        this.renderer = renderer;
     }
 }

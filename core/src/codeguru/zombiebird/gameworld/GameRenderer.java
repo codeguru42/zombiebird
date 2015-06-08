@@ -1,35 +1,43 @@
 package codeguru.zombiebird.gameworld;
 
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenEquations;
+import aurelienribon.tweenengine.TweenManager;
 import codeguru.zombiebird.gameobjects.Bird;
 import codeguru.zombiebird.gameobjects.Grass;
 import codeguru.zombiebird.gameobjects.Pipe;
 import codeguru.zombiebird.gameobjects.ScrollHandler;
 import codeguru.zombiebird.helpers.AssetLoader;
+import codeguru.zombiebird.helpers.InputHandler;
+import codeguru.zombiebird.tween.Value;
+import codeguru.zombiebird.tween.ValueAccessor;
+import codeguru.zombiebird.ui.SimpleButton;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import java.util.List;
 
 public class GameRenderer {
-    private final OrthographicCamera cam;
     private final GameWorld myWorld;
     private final ShapeRenderer shapeRenderer;
     private SpriteBatch batcher;
     private int midPointY;
-    private int gameHeight;
     private Bird bird;
-    private ScrollHandler scroller;
     private Grass frontGrass, backGrass;
     private Pipe pipe1, pipe2, pipe3;
+    private TweenManager manager;
+    private Value alpha = new Value();
+    private List<SimpleButton> menuButtons;
 
-    public GameRenderer(GameWorld world, int gameHeight, int midPointY) {
+    public GameRenderer(GameWorld world, int midPointY) {
         myWorld = world;
-        this.gameHeight = gameHeight;
         this.midPointY = midPointY;
+        this.menuButtons = ((InputHandler) Gdx.input.getInputProcessor()).getMenuButtons();
 
-        cam = new OrthographicCamera();
+        OrthographicCamera cam = new OrthographicCamera();
         cam.setToOrtho(true, 136, 204);
 
         shapeRenderer = new ShapeRenderer();
@@ -38,11 +46,18 @@ public class GameRenderer {
         batcher = new SpriteBatch();
         batcher.setProjectionMatrix(cam.combined);
         initGameObjects();
+        setupTweens();
+    }
+
+    private void setupTweens() {
+        Tween.registerAccessor(Value.class, new ValueAccessor());
+        manager = new TweenManager();
+        Tween.to(alpha, -1, .5f).target(0).ease(TweenEquations.easeOutQuad).start(manager);
     }
 
     private void initGameObjects() {
         bird = myWorld.getBird();
-        scroller = myWorld.getScroller();
+        ScrollHandler scroller = myWorld.getScroller();
         frontGrass = scroller.getFrontGrass();
         backGrass = scroller.getBackGrass();
         pipe1 = scroller.getPipe1();
@@ -50,7 +65,7 @@ public class GameRenderer {
         pipe3 = scroller.getPipe3();
     }
 
-    public void render(float runTime) {
+    public void render(float delta, float runTime) {
         Gdx.gl.glClearColor(55 / 255.0f, 80 / 255.0f, 100 / 255.0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -69,61 +84,24 @@ public class GameRenderer {
         batcher.enableBlending();
         drawSkulls();
 
-        if (bird.shouldntFlap()) {
-            batcher.draw(AssetLoader.bird, bird.getX(), bird.getY(),
-                    bird.getWidth() / 2.0f, bird.getHeight() / 2.0f,
-                    bird.getWidth(), bird.getHeight(), 1, 1, bird.getRotation());
-
-        } else {
-            batcher.draw(AssetLoader.birdAnimation.getKeyFrame(runTime), bird.getX(),
-                    bird.getY(), bird.getWidth() / 2.0f,
-                    bird.getHeight() / 2.0f, bird.getWidth(), bird.getHeight(),
-                    1, 1, bird.getRotation());
+        if (myWorld.isRunning()) {
+            drawBird(runTime);
+            drawScore();
+        } else if (myWorld.isReady()) {
+            drawBird(runTime);
+            drawScore();
+        } else if (myWorld.isMenu()) {
+            drawBirdCentered(runTime);
+            drawMenuUI();
+        } else if (myWorld.isGameOver()) {
+            drawBird(runTime);
+            drawScore();
+        } else if (myWorld.isHighScore()) {
+            drawBird(runTime);
+            drawScore();
         }
-
-        if (myWorld.isReady()) {
-            AssetLoader.shadow.draw(batcher, "Touch me", (136 / 2)
-                    - (42), 76);
-            AssetLoader.font.draw(batcher, "Touch me", (136 / 2)
-                    - (42 - 1), 75);
-        } else {
-            if (myWorld.isGameOver() || myWorld.isHighScore()) {
-                if (myWorld.isGameOver()) {
-                    AssetLoader.shadow.draw(batcher, "Game Over", 25, 56);
-                    AssetLoader.font.draw(batcher, "Game Over", 24, 55);
-
-                    AssetLoader.shadow.draw(batcher, "High Score:", 23, 106);
-                    AssetLoader.font.draw(batcher, "High Score:", 22, 105);
-
-                    String highScore = AssetLoader.getHighScore() + "";
-                    AssetLoader.shadow.draw(batcher, highScore, (136 / 2)
-                            - (3 * highScore.length()), 128);
-                    AssetLoader.font.draw(batcher, highScore, (136 / 2)
-                            - (3 * highScore.length() - 1), 127);
-                } else {
-                    AssetLoader.shadow.draw(batcher, "High Score!", 19, 56);
-                    AssetLoader.font.draw(batcher, "High Score!", 18, 55);
-                }
-
-                AssetLoader.shadow.draw(batcher, "Try again?", 23, 76);
-                AssetLoader.font.draw(batcher, "Try again?", 24, 75);
-
-                String score = myWorld.getScore() + "";
-                AssetLoader.shadow.draw(batcher, score,
-                        (136 / 2) - (3 * score.length()), 12);
-                AssetLoader.font.draw(batcher, score,
-                        (136 / 2) - (3 * score.length() - 1), 11);
-            }
-
-            String score = myWorld.getScore() + "";
-            AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(), (136 / 2)
-                    - (3 * score.length()), 12);
-            AssetLoader.font.draw(batcher, "" + myWorld.getScore(), (136 / 2)
-                    - (3 * score.length() - 1), 11);
-        }
-
-        // End SpriteBatch
         batcher.end();
+        drawTransition(delta);
     }
 
     private void drawGrass() {
@@ -166,5 +144,60 @@ public class GameRenderer {
                 pipe3.getHeight());
         batcher.draw(AssetLoader.bar, pipe3.getX(), pipe3.getY() + pipe3.getHeight() + 45,
                 pipe3.getWidth(), midPointY + 66 - (pipe3.getHeight() + 45));
+    }
+
+    private void drawBirdCentered(float runTime) {
+        batcher.draw(AssetLoader.birdAnimation.getKeyFrame(runTime), 59, bird.getY() - 15,
+                bird.getWidth() / 2.0f, bird.getHeight() / 2.0f,
+                bird.getWidth(), bird.getHeight(), 1, 1, bird.getRotation());
+    }
+
+    private void drawBird(float runTime) {
+
+        if (bird.shouldntFlap()) {
+            batcher.draw(AssetLoader.bird, bird.getX(), bird.getY(),
+                    bird.getWidth() / 2.0f, bird.getHeight() / 2.0f,
+                    bird.getWidth(), bird.getHeight(), 1, 1, bird.getRotation());
+
+        } else {
+            batcher.draw(AssetLoader.birdAnimation.getKeyFrame(runTime), bird.getX(),
+                    bird.getY(), bird.getWidth() / 2.0f,
+                    bird.getHeight() / 2.0f, bird.getWidth(), bird.getHeight(),
+                    1, 1, bird.getRotation());
+        }
+
+    }
+
+    private void drawMenuUI() {
+        batcher.draw(AssetLoader.zbLogo, 136 / 2 - 56, midPointY - 50,
+                AssetLoader.zbLogo.getRegionWidth() / 1.2f,
+                AssetLoader.zbLogo.getRegionHeight() / 1.2f);
+
+        for (SimpleButton button : menuButtons) {
+            button.draw(batcher);
+        }
+
+    }
+
+    private void drawScore() {
+        int length = ("" + myWorld.getScore()).length();
+        AssetLoader.shadow.draw(batcher, "" + myWorld.getScore(),
+                68 - (3 * length), midPointY - 82);
+        AssetLoader.font.draw(batcher, "" + myWorld.getScore(),
+                68 - (3 * length), midPointY - 83);
+    }
+
+    private void drawTransition(float delta) {
+        if (alpha.getValue() > 0) {
+            manager.update(delta);
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.begin(ShapeType.Filled);
+            shapeRenderer.setColor(1, 1, 1, alpha.getValue());
+            shapeRenderer.rect(0, 0, 136, 300);
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        }
     }
 }

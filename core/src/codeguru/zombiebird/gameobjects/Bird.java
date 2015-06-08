@@ -6,28 +6,25 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bird {
     private Vector2 position;
-    private Vector2 velocity;
-    private Vector2 acceleration;
-    private Circle boundingCircle;
+    private Vector2 velocity = new Vector2(0, 0);
+    private Vector2 acceleration = new Vector2(0, 460);
+    private Circle boundingCircle = new Circle();
 
     private float rotation;
     private int width;
     private int height;
+    private float originalY;
     private boolean isAlive = true;
 
     public Bird(float x, float y, int width, int height) {
+        this.originalY = y;
         this.width = width;
         this.height = height;
         position = new Vector2(x, y);
-        velocity = new Vector2(0, 0);
-        acceleration = new Vector2(0, 460);
-        boundingCircle = new Circle();
     }
 
     public void update(float delta) {
-
         velocity.add(acceleration.cpy().scl(delta));
-        boundingCircle.set(position.x + 9, position.y + 6, 6.5f);
 
         if (velocity.y > 200) {
             velocity.y = 200;
@@ -40,6 +37,7 @@ public class Bird {
         }
 
         position.add(velocity.cpy().scl(delta));
+        boundingCircle.set(position.x + 9, position.y + 6, 6.5f);
 
         // Rotate counterclockwise
         if (velocity.y < 0) {
@@ -58,6 +56,10 @@ public class Bird {
             }
 
         }
+    }
+
+    public void updateReady(float runTime) {
+        position.y = 2 * (float) Math.sin(7 * runTime) + originalY;
     }
 
     public void onClick() {

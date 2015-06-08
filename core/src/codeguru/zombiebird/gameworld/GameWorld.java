@@ -11,24 +11,28 @@ public class GameWorld {
     private ScrollHandler scroller;
     private Rectangle ground;
     private int score = 0;
+    private float runTime = 0;
     private GameState currentState;
     private int midPointY;
 
     public enum GameState {
-        READY, RUNNING, GAMEOVER, HIGHSCORE
+        MENU, READY, RUNNING, GAMEOVER, HIGHSCORE
     }
 
     public GameWorld(int midPointY) {
         bird = new Bird(33, midPointY - 5, 17, 12);
         scroller = new ScrollHandler(this, midPointY + 66);
         ground = new Rectangle(0, midPointY + 66, 136, 11);
-        currentState = GameState.READY;
+        currentState = GameState.MENU;
         this.midPointY = midPointY;
     }
 
     public void update(float delta) {
+        runTime += delta;
+
         switch (currentState) {
             case READY:
+            case MENU:
                 updateReady(delta);
                 break;
 
@@ -42,13 +46,13 @@ public class GameWorld {
     }
 
     private void updateReady(float delta) {
-        // Do nothing for now
+        bird.updateReady(runTime);
+        scroller.updateReady(delta);
     }
 
     public void updateRunning(float delta) {
         // Add a delta cap so that if our game takes too long
         // to update, we will not break our collision detection.
-
         if (delta > .15f) {
             delta = .15f;
         }
@@ -83,6 +87,10 @@ public class GameWorld {
         currentState = GameState.RUNNING;
     }
 
+    public void ready() {
+        currentState = GameState.READY;
+    }
+
     public void restart() {
         currentState = GameState.READY;
         score = 0;
@@ -97,6 +105,14 @@ public class GameWorld {
 
     public boolean isHighScore() {
         return currentState == GameState.HIGHSCORE;
+    }
+
+    public boolean isMenu() {
+        return currentState == GameState.MENU;
+    }
+
+    public boolean isRunning() {
+        return currentState == GameState.RUNNING;
     }
 
     public Bird getBird() {
@@ -114,5 +130,9 @@ public class GameWorld {
 
     public void addScore(int increment) {
         score += increment;
+    }
+
+    public int getMidPointY() {
+        return midPointY;
     }
 }

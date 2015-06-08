@@ -21,16 +21,28 @@ public class ScrollHandler {
         pipe3 = new Pipe(pipe2.getTailX() + PIPE_GAP, 0, 22, 60, SCROLL_SPEED, yPos);
     }
 
+    public void updateReady(float delta) {
+        frontGrass.update(delta);
+        backGrass.update(delta);
+
+        // Same with grass
+        if (frontGrass.isScrolledLeft()) {
+            frontGrass.reset(backGrass.getTailX());
+
+        } else if (backGrass.isScrolledLeft()) {
+            backGrass.reset(frontGrass.getTailX());
+
+        }
+    }
+
     public void update(float delta) {
-        // Update our objects
         frontGrass.update(delta);
         backGrass.update(delta);
         pipe1.update(delta);
         pipe2.update(delta);
         pipe3.update(delta);
 
-        // Check if any of the pipes are scrolled left,
-        // and reset accordingly
+        // Check if any of the pipes are scrolled left and reset accordingly
         if (pipe1.isScrolledLeft()) {
             pipe1.reset(pipe3.getTailX() + PIPE_GAP);
         } else if (pipe2.isScrolledLeft()) {
@@ -58,7 +70,6 @@ public class ScrollHandler {
         pipe3.stop();}
 
     public boolean collides(Bird bird) {
-
         if (!pipe1.isScored()
                 && pipe1.getX() + (pipe1.getWidth() / 2) < bird.getX()
                 + bird.getWidth()) {

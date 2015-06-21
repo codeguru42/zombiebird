@@ -60,6 +60,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
+        compile fileTree(dir: '../libs', include: '*.jar')
     }
 }
 
@@ -90,6 +91,7 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
+        compile fileTree(dir: '../libs', include: '*.jar')
     }
 }
 
@@ -100,8 +102,7 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        compile "aurelienribon:tweenengine:6.3.3"
-        compile "aurelienribon:tweenengine:6.3.3:sources"
+        compile fileTree(dir: '../libs', include: '*.jar')
     }
 }
 
